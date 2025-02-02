@@ -1,6 +1,6 @@
 const op_reset_counter = "OpResetCounter"c; // 0x3dc2af2d
 
-// global variables context
+// global variables context (also you can declare global variables in separate file like storage.tolk and import it)
 global ctxOwnerAddress: slice;
 global ctxCounter: int;
 
@@ -19,13 +19,13 @@ fun storeCtx() { // method for storing data to storage
     );
 }
 
-fun onInternalMessage(msgValue: int, msgFull: cell, msgBody: slice) { // All internal messages (from other contracts) are processed in onInternalMessage method
+fun onInternalMessage(msgFull: cell, msgBody: slice) { // Entrypoint for all internal messages (from other contracts)
     loadCtx(); // load data from storage and fill ctx variables
     var cs = msgFull.beginParse(); // start parse income message
     cs.loadMessageFlags(); // load message flags
     var sender = cs.loadAddress(); // read sender address from msg
 
-    if (isSliceBitsEqual(sender, ctxOwnerAddress) & !isEndOfSlice(msgBody)) { // isSliceBitsEqual - standart function for comparing slices
+    if (isSliceBitsEqual(sender, ctxOwnerAddress) & !isEndOfSlice(msgBody)) { // // isSliceBitsEqual - standart function for comparing slices. isEndOfSlice - standart function for checking empty or end of slice
         var op = msgBody.loadMessageOp(); // load operation from message body (32 uint)
         if (op == op_reset_counter) {
             ctxCounter = 0; // update counter value
