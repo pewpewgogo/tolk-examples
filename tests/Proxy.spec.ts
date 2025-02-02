@@ -1,5 +1,5 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { Cell, toNano } from '@ton/core';
+import { beginCell, Cell, toNano } from '@ton/core';
 import { Proxy } from '../wrappers/Proxy';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
@@ -31,20 +31,48 @@ describe('Proxy', () => {
             from: deployer.address,
             to: proxy.address,
             deploy: true,
-            success: true,
         });
     });
 
-    it('trx to proxy', async () => {
+    it('trx to proxy from owner', async () => {
         const owner = await blockchain.treasury( 'owner')
+        const someone1 = await blockchain.treasury( 'someone1')
         const transaction = await deployer.send({
             to: proxy.address,
             value: toNano('1'),
+            body: beginCell()
+                .storeUint(0x5eb9a301, 32) // op
+                .storeUint(0, 64) // queryId
+                .storeAddress(someone1.address)
+                .storeCoins(toNano('0.9'))
+                .endCell()
         })
 
         expect(transaction.transactions).toHaveTransaction({
             from: proxy.address,
             to: owner.address,
+            success: true
+        });
+    });
+
+    it('trx to proxy from someone', async () => {
+        const owner = await blockchain.treasury( 'owner')
+        const someone = await blockchain.treasury( 'someone')
+        const transaction = await someone.send({
+            to: proxy.address,
+            value: toNano('1'),
+        })
+
+        expect(transaction.transactions).toHaveTransaction({
+            from: someone.address,
+            to: proxy.address,
+            success: true
+        });
+
+        expect(transaction.transactions).toHaveTransaction({
+            from: proxy.address,
+            to: owner.address,
+            success: true
         });
     });
 });

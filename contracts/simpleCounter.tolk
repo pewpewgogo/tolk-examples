@@ -4,12 +4,14 @@ const op_reset_counter = "OpResetCounter"c; // 0x3dc2af2d
 global ctxOwnerAddress: slice;
 global ctxCounter: int;
 
+@inline
 fun loadCtx() { // method for loading data from storage
     var cs = getContractData().beginParse(); // getContractData is a standard function for loading data from storage
     ctxOwnerAddress = cs.loadAddress();
     ctxCounter = cs.loadUint(32);
 }
 
+@inline
 fun storeCtx() { // method for storing data to storage
     setContractData( // setContractData is a standard function for storing data to storage
         beginCell()
