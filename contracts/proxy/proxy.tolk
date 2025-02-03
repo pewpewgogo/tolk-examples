@@ -1,5 +1,6 @@
 import "@stdlib/common.tolk"
-import "imports/constants.tolk"
+
+import "constants.tolk"
 
 global st_owner_address: slice;
 
