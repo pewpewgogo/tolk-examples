@@ -25,10 +25,11 @@ fun onInternalMessage(msgFull: cell, msgBody: slice) { // Entrypoint for all int
     loadCtx(); // load data from storage and fill ctx variables
     var cs = msgFull.beginParse(); // start parse income message
     cs.loadMessageFlags(); // load message flags
-    var sender = cs.loadAddress(); // read sender address from msg
+    val sender = cs.loadAddress(); // read sender address from msg
 
     if (isSliceBitsEqual(sender, ctxOwnerAddress) & !isEndOfSlice(msgBody)) { // // isSliceBitsEqual - standart function for comparing slices. isEndOfSlice - standart function for checking empty or end of slice
-        var op = msgBody.loadMessageOp(); // load operation from message body (32 uint)
+        val op = msgBody.loadMessageOp(); // load operation from message body (32 uint)
+        val queryId = msgBody.loadMessageQueryId(); // load queryId (64 uint). LINK_TO_MESSAGE_STANDART
         if (op == op_reset_counter) {
             ctxCounter = 0; // update counter value
             storeCtx(); // update ctx data in contract storage

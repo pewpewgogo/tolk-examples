@@ -1,4 +1,3 @@
-
 import "op-codes.tolk"
 
 const MY_WORKCHAIN = BASECHAIN;

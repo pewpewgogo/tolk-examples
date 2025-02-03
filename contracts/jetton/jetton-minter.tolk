@@ -42,8 +42,8 @@ fun saveData(totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jet
 fun sendToJettonWallet(toAddress: slice, jettonWalletCode: cell, tonAmount: int, masterMsg: cell, needStateInit: int) {
     reserveToncoinsOnBalance(ONE_TON / 100, RESERVE_MODE_EXACT_AMOUNT); // reserve for storage fees
 
-    var stateInit: cell = calculateJettonWalletStateInit(toAddress, getMyAddress(), jettonWalletCode);
-    var toWalletAddress: slice = calculateJettonWalletAddress(stateInit);
+    val stateInit: cell = calculateJettonWalletStateInit(toAddress, getMyAddress(), jettonWalletCode);
+    val toWalletAddress: slice = calculateJettonWalletAddress(stateInit);
 
     // build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     var msg = beginCell()
@@ -57,12 +57,12 @@ fun sendToJettonWallet(toAddress: slice, jettonWalletCode: cell, tonAmount: int,
         msg = msg.storeOnlyBodyRef(masterMsg);
     }
 
-    sendRawMessage(msg.endCell(), SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    sendMessage(msg.endCell(), SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
     var inMsgFullSlice: slice = inMsgFull.beginParse();
-    var msgFlags: int = inMsgFullSlice.loadMessageFlags();
+    val msgFlags: int = inMsgFullSlice.loadMessageFlags();
 
     if (isMessageBounced(msgFlags)) {
         inMsgBody.skipBouncedPrefix();
@@ -71,37 +71,37 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
             return;
         }
         inMsgBody.skipMessageQueryId();
-        var jettonAmount: int = inMsgBody.loadCoins();
-        var (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
+        val jettonAmount: int = inMsgBody.loadCoins();
+        val (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
         saveData(totalSupply - jettonAmount, adminAddress, nextAdminAddress, jettonWalletCode, metadataUri);
         return;
     }
-    var senderAddress: slice = inMsgFullSlice.loadAddress();
+    val senderAddress: slice = inMsgFullSlice.loadAddress();
 
-    var fwdFeeFromInMsg: int = inMsgFullSlice.retrieveFwdFee();
-    var fwdFee: int = calculateOriginalMessageFee(MY_WORKCHAIN, fwdFeeFromInMsg); // we use message fwd_fee for estimation of forward_payload costs
+    val fwdFeeFromInMsg: int = inMsgFullSlice.retrieveFwdFee();
+    val fwdFee: int = calculateOriginalMessageFee(MY_WORKCHAIN, fwdFeeFromInMsg); // we use message fwd_fee for estimation of forward_payload costs
 
-    var op: int = inMsgBody.loadMessageOp();
-    var queryId: int = inMsgBody.loadMessageQueryId();
+    val op: int = inMsgBody.loadMessageOp();
+    val queryId: int = inMsgBody.loadMessageQueryId();
 
     var (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
 
     if (op == `op::mint`) {
         assert(isSliceBitsEqual(senderAddress, adminAddress)) throw `error::not_owner`;
-        var toAddress: slice = inMsgBody.loadAddress();
+        val toAddress: slice = inMsgBody.loadAddress();
         checkSameWorkchain(toAddress);
-        var tonAmount: int = inMsgBody.loadCoins();
-        var masterMsg: cell = inMsgBody.loadRef();
+        val tonAmount: int = inMsgBody.loadCoins();
+        val masterMsg: cell = inMsgBody.loadRef();
         inMsgBody.assertEndOfSlice();
 
         // see internal_transfer TL-B layout in jetton.tlb
         var masterMsgSlice: slice = masterMsg.beginParse();
         assert(masterMsgSlice.loadMessageOp() == `op::internal_transfer`) throw `error::invalid_op`;
         masterMsgSlice.skipMessageQueryId();
-        var jettonAmount: int = masterMsgSlice.loadCoins();
+        val jettonAmount: int = masterMsgSlice.loadCoins();
         masterMsgSlice.loadAddress(); // from_address
         masterMsgSlice.loadAddress(); // response_address
-        var forwardTonAmount: int = masterMsgSlice.loadCoins(); // forward_ton_amount
+        val forwardTonAmount: int = masterMsgSlice.loadCoins(); // forward_ton_amount
         checkEitherForwardPayload(masterMsgSlice); // either_forward_payload
 
         // a little more than needed, it’s ok since it’s sent by the admin and excesses will return back
@@ -114,11 +114,11 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
 
     if (op == `op::burn_notification`) {
         // see burn_notification TL-B layout in jetton.tlb
-        var jettonAmount: int = inMsgBody.loadCoins();
-        var fromAddress: slice = inMsgBody.loadAddress();
+        val jettonAmount: int = inMsgBody.loadCoins();
+        val fromAddress: slice = inMsgBody.loadAddress();
         assert(isSliceBitsEqual(calculateUserJettonWalletAddress(fromAddress, getMyAddress(), jettonWalletCode), senderAddress)) throw `error::not_valid_wallet`;
         saveData(totalSupply - jettonAmount, adminAddress, nextAdminAddress, jettonWalletCode, metadataUri);
-        var responseAddress: slice = inMsgBody.loadAddress();
+        val responseAddress: slice = inMsgBody.loadAddress();
         inMsgBody.assertEndOfSlice();
 
         if (~ addressIsNone(responseAddress)) {
@@ -137,11 +137,11 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
 
     if (op == `op::provide_wallet_address`) {
         // see provide_wallet_address TL-B layout in jetton.tlb
-        var ownerAddress: slice = inMsgBody.loadAddress();
-        var isIncludeAddress: int = inMsgBody.loadBool();
+        val ownerAddress: slice = inMsgBody.loadAddress();
+        val isIncludeAddress: int = inMsgBody.loadBool();
         inMsgBody.assertEndOfSlice();
 
-        var includedAddress: cell = isIncludeAddress
+        val includedAddress: cell = isIncludeAddress
         ? beginCell().storeSlice(ownerAddress).endCell()
         : null;
 
@@ -160,9 +160,9 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
             msg = msg.storeAddressNone();
         }
 
-        var msgCell: cell = msg.storeMaybeRef(includedAddress).endCell();
+        val msgCell: cell = msg.storeMaybeRef(includedAddress).endCell();
 
-        sendRawMessage(msgCell, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        sendMessage(msgCell, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
         return;
     }
 
@@ -219,16 +219,16 @@ fun buildContentCell(metadataUri: slice): cell {
 }
 
 get get_jetton_data(): (int, int, slice, cell, cell) {
-    var (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
+    val (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
     return (totalSupply, TRUE, adminAddress, buildContentCell(metadataUri.beginParse()), jettonWalletCode);
 }
 
 get get_wallet_address(ownerAddress: slice): slice {
-    var (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
+    val (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
     return calculateUserJettonWalletAddress(ownerAddress, getMyAddress(), jettonWalletCode);
 }
 
 get get_next_admin_address(): slice {
-    var (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
+    val (totalSupply: int, adminAddress: slice, nextAdminAddress: slice, jettonWalletCode: cell, metadataUri: cell) = loadData();
     return nextAdminAddress;
 }

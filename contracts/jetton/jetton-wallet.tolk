@@ -83,7 +83,7 @@ fun sendJettons(inMsgBody: slice, senderAddress: slice, msgValue: int, fwdFee: i
 
     checkAmountIsEnoughToTransfer(msgValue, forwardTonAmount, fwdFee);
 
-    sendRawMessage(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    sendMessage(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 
     saveData(status, balance, ownerAddress, jettonMasterAddress);
 }
@@ -150,9 +150,9 @@ fun receiveJettons(inMsgBody: slice, senderAddress: slice, myTonBalance: int, ms
 @inline_ref
 fun burnJettons(inMsgBody: slice, senderAddress: slice, msgValue: int) {
     var (status: int, balance: int, ownerAddress: slice, jettonMasterAddress: slice) = loadData();
-    var queryId: int = inMsgBody.loadMessageQueryId();
-    var jettonAmount: int = inMsgBody.loadCoins();
-    var responseAddress: slice = inMsgBody.loadAddress();
+    val queryId: int = inMsgBody.loadMessageQueryId();
+    val jettonAmount: int = inMsgBody.loadCoins();
+    val responseAddress: slice = inMsgBody.loadAddress();
     inMsgBody.skipMaybeRef(); // custom_payload
     inMsgBody.assertEndOfSlice();
 
@@ -179,7 +179,7 @@ fun burnJettons(inMsgBody: slice, senderAddress: slice, msgValue: int) {
 
     checkAmountIsEnoughToBurn(msgValue);
 
-    sendRawMessage(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    sendMessage(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 
     saveData(status, balance, ownerAddress, jettonMasterAddress);
 }

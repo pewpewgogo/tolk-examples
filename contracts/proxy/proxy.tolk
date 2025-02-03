@@ -43,13 +43,13 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
 @inline
 fun onOwnerMessage(op: int, msgBody: slice) {
     if (op == op_owner_transfer) {
-        var to = msgBody.loadAddress();
-        var amount = msgBody.loadCoins();
+        val to = msgBody.loadAddress();
+        val amount = msgBody.loadCoins();
         sendMessage(beginCell()
             .storeUint(BOUNCEABLE, 6)
             .storeSlice(st_owner_address)
             .storeCoins(amount)
-            .storeUint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+            .storeUint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1) // todo: replace with something normal
             .endCell(),
             SEND_MODE_IGNORE_ERRORS | SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE
         );
@@ -57,7 +57,7 @@ fun onOwnerMessage(op: int, msgBody: slice) {
     }
 
     if (op == op_owner_change) {
-        var newOwner = msgBody.loadAddress();
+        val newOwner = msgBody.loadAddress();
         st_owner_address = newOwner;
         storeData();
     }
@@ -69,14 +69,14 @@ fun forwardToOwner(inMsgBody: slice) {
         .storeUint(BOUNCEABLE, 6)
         .storeSlice(st_owner_address)
         .storeCoins(0)
-        .storeUint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1);
+        .storeUint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1); // todo: replace with someting normal
 
-    // if (!isEndOfSlice(inMsgBody)) {
-    //     outMsgBody.storeBool(-1);
-    //     outMsgBody.storeRef(beginCell().storeSlice(inMsgBody).endCell());
-    // } else {
-    //     outMsgBody.storeBool(0);
-    // }
+    if (!isEndOfSlice(inMsgBody)) {
+        outMsgBody.storeBool(-1);
+        outMsgBody.storeRef(beginCell().storeSlice(inMsgBody).endCell());
+    } else {
+        outMsgBody.storeBool(0);
+    }
 
     sendMessage(outMsgBody.endCell(),
         SEND_MODE_IGNORE_ERRORS | SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE

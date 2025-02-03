@@ -1,7 +1,7 @@
 import {NetworkProvider, sleep, UIProvider} from '@ton/blueprint';
 import {Address, beginCell, Builder, Cell, Dictionary, DictionaryValue, Slice} from "@ton/core";
 import {sha256} from '@ton/crypto';
-import {TonClient4} from "@ton/ton";
+import { TonClient, TonClient4 } from '@ton/ton';
 import {base64Decode} from "@ton/sandbox/dist/utils/base64";
 import {toUnits} from "./units";
 
