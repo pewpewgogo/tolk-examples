@@ -121,7 +121,7 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
         val responseAddress: slice = inMsgBody.loadAddress();
         inMsgBody.assertEndOfSlice();
 
-        if (~ addressIsNone(responseAddress)) {
+        if (!addressIsNone(responseAddress)) {
             // build MessageRelaxed, see TL-B layout in stdlib.fc#L733
             var msg = beginCell()
             .storeUint(NON_BOUNCEABLE, 6) // todo: Replace storeUint with named method

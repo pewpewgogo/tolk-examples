@@ -128,7 +128,7 @@ fun receiveJettons(inMsgBody: slice, senderAddress: slice, myTonBalance: int, ms
         sendMessage(msg, SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
 
-    if (~ addressIsNone(responseAddress)) {
+    if (!addressIsNone(responseAddress)) {
         var toLeaveOnBalance: int = myTonBalance - msgValue + getMyStorageDuePayment();
         reserveToncoinsOnBalance(max(toLeaveOnBalance, calculateJettonWalletMinStorageFee()), RESERVE_MODE_AT_MOST);
 
