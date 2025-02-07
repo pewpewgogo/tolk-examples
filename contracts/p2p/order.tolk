@@ -79,7 +79,7 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
     var op: int = inMsgBody.loadMessageOp();
 
     if (op == opTransferNotification) {
-      assert(msgValue >= 100000000) throw errorNotEnoughTon; // 0.1 TON
+      assert(msgValue >= 100000000) throw errorNotEnoughTon; // 0.1 TON todo: Add a proper gas count
       var (queryId: int, jettonAmount: int, fromUser: slice) = (inMsgBody.loadMessageQueryId(), inMsgBody.loadCoins(), inMsgBody.loadAddress());
       loadData();
       assert(ctxCompleteState == 0) throw errorOrderCompletedAlready;
@@ -88,7 +88,7 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
       val jettonWalletAddressA: slice = calculateUserJettonWalletAddress(getMyAddress(), minterAddressA, jettonCodeA);
       val jettonWalletAddressB: slice = calculateUserJettonWalletAddress(getMyAddress(), minterAddressB, jettonCodeB);
       if (isSliceBitsEqual(fromAddress, jettonWalletAddressA)) {
-        // accept order deploy and send confirmation to owner?
+        // todo: accept order deploy and send confirmation to owner?
       }
       val isB: int = isSliceBitsEqual(fromAddress, jettonWalletAddressB);
       assert(isB) throw errorWrongToken; // we accept JettonB only
