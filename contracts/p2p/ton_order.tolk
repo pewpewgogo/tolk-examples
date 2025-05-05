@@ -3,20 +3,14 @@ import "imports/op.tolk"
 import "imports/messages.tolk"
 import "imports/utils.tolk"
 
-global ctxCompleteState: int;
-global ctxAmountTokenA: int;
-global ctxAmountTokenB: int;
-global ctxOrderOwner: slice;
+global ctxAdmin: slice;
 global ctxTokenA: cell;
 global ctxTokenB: cell;
 
 @inline
 fun loadData() {
   var ds: slice = getContractData().beginParse();
-  ctxCompleteState = ds.loadBool();
-  ctxAmountTokenA = ds.loadCoins();
-  ctxAmountTokenB = ds.loadCoins();
-  ctxOrderOwner = ds.loadAddress();
+  ctxAdmin = ds.loadAddress();
   ctxTokenA = ds.loadRef();
   ctxTokenB = ds.loadRef();
   ds.assertEndOfSlice();
@@ -26,9 +20,7 @@ fun loadData() {
 fun saveData() {
   setContractData(
     beginCell()
-    .storeBool(ctxCompleteState)
-      .storeCoins(ctxAmountTokenA)
-      .storeCoins(ctxAmountTokenB)
+      .storeSlice(ctxAdmin)
       .storeRef(ctxTokenA)
       .storeRef(ctxTokenB)
     .endCell()
@@ -82,13 +74,12 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
       assert(msgValue >= 100000000) throw errorNotEnoughTon; // 0.1 TON todo: Add a proper gas count
       var (queryId: int, jettonAmount: int, fromUser: slice) = (inMsgBody.loadMessageQueryId(), inMsgBody.loadCoins(), inMsgBody.loadAddress());
       loadData();
-      assert(ctxCompleteState == 0) throw errorOrderCompletedAlready;
-      val (minterAddressA, decimalA, jettonCodeA) = upackTokenData(ctxTokenA);
-      val (minterAddressB, decimalB, jettonCodeB) = upackTokenData(ctxTokenB);
+      val (minterAddressA, _, jettonCodeA) = upackTokenData(ctxTokenA);
+      val (minterAddressB, _, jettonCodeB) = upackTokenData(ctxTokenB);
       val jettonWalletAddressA: slice = calculateUserJettonWalletAddress(getMyAddress(), minterAddressA, jettonCodeA);
       val jettonWalletAddressB: slice = calculateUserJettonWalletAddress(getMyAddress(), minterAddressB, jettonCodeB);
       if (isSliceBitsEqual(fromAddress, jettonWalletAddressA)) {
-        // todo: accept order deploy and send confirmation to owner?
+        // deploy order?
       }
       val isB: int = isSliceBitsEqual(fromAddress, jettonWalletAddressB);
       assert(isB) throw errorWrongToken; // we accept JettonB only
@@ -96,7 +87,7 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
 
       sendTokens(fromUser, minterAddressA, ctxAmountTokenA, jettonCodeA); // send token A to fromUser
       sendTokens(ctxOrderOwner, minterAddressB, jettonAmount, jettonCodeB); // send token B to owner
-      ctxCompleteState = -1; // complete order
+      ctxCompleteStatus = -1; // complete order
       saveData();
       return;
     }
@@ -106,5 +97,5 @@ fun onInternalMessage(msgValue: int, inMsgFull: cell, inMsgBody: slice) {
 
 get state(): (int, int, int) {
   loadData();
-  return (ctxCompleteState, ctxAmountTokenA, ctxAmountTokenB);
+  return (ctxCompleteStatus, ctxAmountTokenA, ctxAmountTokenB);
 }

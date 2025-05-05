@@ -31,7 +31,7 @@ fun sendMessageWithStateinit(amount: int, to: slice, stateInit: cell, body: cell
             .storeRef(stateInit)
             .storeRef(body)
             .endCell();
-    sendRawMessage(msg, mode);
+    sendMessage(msg, mode);
 }
 
 fun sendTextMsg(toAddr: slice, value: int, mode: int, content: builder) {

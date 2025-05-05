@@ -105,7 +105,7 @@ fun receiveJettons(inMsgBody: slice, senderAddress: slice, myTonBalance: int, ms
 
     var forwardTonAmount: int = inMsgBody.loadCoins();
 
-    if (forwardTonAmount) {
+    if (forwardTonAmount > 0) {
         var eitherForwardPayload: slice = inMsgBody;
 
         // see transfer_notification TL-B layout in jetton.tlb
